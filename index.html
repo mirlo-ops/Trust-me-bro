@@ -17,7 +17,8 @@
         .status-right{display:flex;align-items:center;gap:6px;font-size:12px}
         .battery{width:24px;height:12px;border:1.5px solid currentColor;border-radius:3px;position:relative;display:flex;align-items:center;padding:1.5px}
         .battery::after{content:'';position:absolute;right:-4px;width:2px;height:5px;background:currentColor;border-radius:0 1px 1px 0}
-        .battery-level{height:100%;width:66%;background:currentColor;border-radius:1px}
+        .battery-level{height:100%;width:66%;background:currentColor;border-radius:1px;transition:width .3s,background-color .3s}
+        .battery-charging::before{content:'⚡';position:absolute;left:-14px;font-size:10px;color:#fbbf24}
         .signal-bars{display:flex;align-items:flex-end;gap:1px;height:12px}
         .signal-bar{width:3px;background:currentColor;border-radius:1px}
 
@@ -321,8 +322,8 @@
             <div class="status-right">
                 <div class="signal-bars"><div class="signal-bar" style="height:4px"></div><div class="signal-bar" style="height:6px"></div><div class="signal-bar" style="height:8px"></div><div class="signal-bar" style="height:11px"></div></div>
                 <span style="font-size:11px">LTE</span>
-                <div class="battery"><div class="battery-level"></div></div>
-                <span style="font-size:11px">66%</span>
+                <div class="battery"><div class="battery-level" id="phoneBatteryLevel"></div></div>
+                <span style="font-size:11px" id="phoneBatteryText">66%</span>
             </div>
         </div>
 
@@ -335,7 +336,7 @@
         <div class="app-screen" id="avtobuy-app">
             <div class="app-header">
                 <div class="back-btn" onclick="closeApp('avtobuy')">←</div>
-                <div class="avtobuy-logo"><span>Avto</span><span>Buy</span></div>
+                <div class="avtobuy-logo"><span>Car</span><span>GO</span></div>
                 <div class="city-selector" onclick="showCityFilter()">📍 <span id="currentCity">Челябинск</span></div>
             </div>
             <div class="search-bar">
@@ -501,7 +502,7 @@
             <span class="menu-item">Окно</span>
         </div>
         <div class="macos-menubar-right">
-            <span>🔋 66%</span>
+            <span id="macosBattery">🔋 66%</span>
             <span>📶</span>
             <span id="macosTime">13:03</span>
         </div>
@@ -552,7 +553,7 @@ const newsEvents=[
 ];
 
 const appDefs=[
-{id:'avtobuy',icon:'🚗',label:'AvtoBuy',bg:'linear-gradient(135deg,#1a1a2e,#2d2d5e)'},
+{id:'avtobuy',icon:'🚗',iconImg:'CarGO-icon-192x192.png',label:'CarGO',bg:'linear-gradient(135deg,#1a1a2e,#2d2d5e)'},
 {id:'maps',icon:'📍',label:'Карты',bg:'linear-gradient(135deg,#22c55e,#16a34a)'},
 {id:'garage',icon:'🏠',label:'Гараж',bg:'linear-gradient(135deg,#4a9eff,#2563eb)'},
 {id:'bank',icon:'🟠',label:'П-Банк',bg:'linear-gradient(135deg,#ff8c00,#ea580c)'},
@@ -588,6 +589,8 @@ function applyMode(){
     const tgl=document.getElementById('interfaceToggle');
     const lbl=document.getElementById('interfaceModeLabel');
     if(currentMode==='desktop'){tgl.classList.add('active');lbl.textContent='macOS'}else{tgl.classList.remove('active');lbl.textContent='Телефон'}
+    // Обновляем батарею после смены режима
+    updateBatteryUI(currentBatteryLevel, isCharging);
 }
 function toggleInterfaceMode(){
     if(currentMode==='phone'){
@@ -610,11 +613,11 @@ window.addEventListener('resize',()=>{if(GS.interfaceMode==='auto')detectMode()}
 function buildDesktopUI(){
     // Desktop icons
     const di=document.getElementById('macosDesktopIcons');
-    di.innerHTML=appDefs.map(a=>`<div class="macos-desktop-icon" onclick="openDesktopApp('${a.id}')"><div class="icon-img" style="background:${a.bg}">${a.icon}</div><div class="icon-label">${a.label}</div></div>`).join('');
+    di.innerHTML=appDefs.map(a=>`<div class="macos-desktop-icon" onclick="openDesktopApp('${a.id}')"><div class="icon-img" style="background:${a.bg}">${a.iconImg ? `<img src="${a.iconImg}" style="width:100%;height:100%;border-radius:14px;object-fit:cover">` : a.icon}</div><div class="icon-label">${a.label}</div></div>`).join('');
     // Dock
     const dk=document.getElementById('macosDock');
     const dockApps=['avtobuy','garage','bank','maps','news','settings'];
-    dk.innerHTML=dockApps.map(id=>{const a=appDefs.find(x=>x.id===id);return`<div class="dock-item" id="dock-${id}" onclick="openDesktopApp('${id}')"><div style="width:44px;height:44px;border-radius:11px;background:${a.bg};display:flex;align-items:center;justify-content:center;font-size:22px">${a.icon}</div><div class="dock-dot"></div></div>`}).join('')+'<div class="dock-separator"></div><div class="dock-item" onclick="openDesktopApp(\'notepad\')"><div style="width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#fbbf24,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:22px">💡</div><div class="dock-dot"></div></div>';
+    dk.innerHTML=dockApps.map(id=>{const a=appDefs.find(x=>x.id===id);return`<div class="dock-item" id="dock-${id}" onclick="openDesktopApp('${id}')"><div style="width:44px;height:44px;border-radius:11px;background:${a.bg};display:flex;align-items:center;justify-content:center;font-size:22px">${a.iconImg ? `<img src="${a.iconImg}" style="width:100%;height:100%;border-radius:11px;object-fit:cover">` : a.icon}</div><div class="dock-dot"></div></div>`}).join('')+'<div class="dock-separator"></div><div class="dock-item" onclick="openDesktopApp(\'notepad\')"><div style="width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#fbbf24,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:22px">💡</div><div class="dock-dot"></div></div>';
     // Windows container
     document.getElementById('macosWindows').innerHTML='';
 }
@@ -684,7 +687,7 @@ function renderDesktopAppContent(id){
 }
 // ===================== PHONE APP GRID =====================
 function buildPhoneGrid(){
-    document.getElementById('phoneAppGrid').innerHTML=appDefs.map(a=>`<div class="app-icon" onclick="openApp('${a.id}')"><div class="app-icon-img" style="background:${a.bg}">${a.icon}</div><span class="app-icon-label">${a.label}</span></div>`).join('');
+    document.getElementById('phoneAppGrid').innerHTML=appDefs.map(a=>`<div class="app-icon" onclick="openApp('${a.id}')"><div class="app-icon-img" style="background:${a.bg}">${a.iconImg ? `<img src="${a.iconImg}" style="width:100%;height:100%;border-radius:14px;object-fit:cover">` : a.icon}</div><span class="app-icon-label">${a.label}</span></div>`).join('');
 }
 
 // ===================== APP NAVIGATION =====================
@@ -1174,6 +1177,86 @@ function applyFilters(){
     closeModal();
 }
 
+// ===================== BATTERY API =====================
+let currentBatteryLevel = 66;
+let isCharging = false;
+
+function updateBatteryUI(level, charging) {
+    currentBatteryLevel = Math.round(level);
+    isCharging = charging;
+    
+    // Phone mode battery
+    const phoneLevelEl = document.getElementById('phoneBatteryLevel');
+    const phoneTextEl = document.getElementById('phoneBatteryText');
+    if (phoneLevelEl) {
+        phoneLevelEl.style.width = `${currentBatteryLevel}%`;
+        if (currentBatteryLevel > 50) {
+            phoneLevelEl.style.backgroundColor = '#22c55e';
+        } else if (currentBatteryLevel >= 20) {
+            phoneLevelEl.style.backgroundColor = '#fbbf24';
+        } else {
+            phoneLevelEl.style.backgroundColor = '#ef4444';
+        }
+        if (charging) {
+            phoneLevelEl.parentElement.classList.add('battery-charging');
+        } else {
+            phoneLevelEl.parentElement.classList.remove('battery-charging');
+        }
+    }
+    if (phoneTextEl) {
+        phoneTextEl.textContent = `${currentBatteryLevel}%${charging ? ' ⚡' : ''}`;
+    }
+    
+    // macOS mode battery
+    const macosBatteryEl = document.getElementById('macosBattery');
+    if (macosBatteryEl) {
+        macosBatteryEl.textContent = `🔋 ${currentBatteryLevel}%${charging ? ' ⚡' : ''}`;
+        if (currentBatteryLevel > 50) {
+            macosBatteryEl.style.color = '#22c55e';
+        } else if (currentBatteryLevel >= 20) {
+            macosBatteryEl.style.color = '#fbbf24';
+        } else {
+            macosBatteryEl.style.color = '#ef4444';
+        }
+    }
+}
+
+function initBatteryAPI() {
+    if (!navigator.getBattery) {
+        console.log('Battery API not supported');
+        updateBatteryUI(100, false);
+        return;
+    }
+    
+    try {
+        navigator.getBattery().then(battery => {
+            updateBatteryUI(battery.level * 100, battery.charging);
+            
+            battery.addEventListener('levelchange', () => {
+                updateBatteryUI(battery.level * 100, battery.charging);
+            });
+            
+            battery.addEventListener('chargingchange', () => {
+                updateBatteryUI(battery.level * 100, battery.charging);
+            });
+            
+            battery.addEventListener('chargingtimechange', () => {
+                updateBatteryUI(battery.level * 100, battery.charging);
+            });
+            
+            battery.addEventListener('dischargingtimechange', () => {
+                updateBatteryUI(battery.level * 100, battery.charging);
+            });
+        }).catch(err => {
+            console.log('Battery API error:', err);
+            updateBatteryUI(100, false);
+        });
+    } catch (err) {
+        console.log('Battery API error:', err);
+        updateBatteryUI(100, false);
+    }
+}
+
 // ===================== UTILS =====================
 function fmtP(p){return p.toLocaleString('ru-RU')+' ₽'}
 function showToast(msg,type=''){
@@ -1202,9 +1285,10 @@ function init(){
     detectMode();
     if(currentMode==='desktop')buildDesktopUI();
     renderListings();renderGarage();renderTransactions();updateBalance();
-    updateGameTimeDisplay(); // Показываем игровое время вместо реального
-    startGameTimer(); // Запускаем игровой таймер
+    updateGameTimeDisplay();
+    startGameTimer();
     document.getElementById('currentCity').textContent=GS.currentCity||'Челябинск';
+    initBatteryAPI();
 }
 init();
 </script>
