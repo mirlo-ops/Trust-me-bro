@@ -567,7 +567,7 @@ const appDefs=[
 ];
 
 // ===================== STATE =====================
-let GS={balance:500000,garage:[],listings:[],transactions:[],favorites:[],notes:'',gameDay:1,gameDate:new Date(2026,8,7).toISOString(),myListings:[],maxGarageSlots:3,credits:[],chats:[],news:[],activeEffects:[],interfaceMode:'auto',currentCity:'Челябинск',gameTimeSeconds:0};
+let GS={balance:500000,garage:[],listings:[],transactions:[],favorites:[],notes:'',gameDay:1,gameDate:new Date(2026,8,7).toISOString(),myListings:[],maxGarageSlots:3,credits:[],chats:[],news:[],activeEffects:[],interfaceMode:'auto',currentCity:'Челябинск',gameTimeSeconds:8*3600}; // Старт в 08:00 (8 часов * 3600 секунд)
 
 function loadGame(){const s=localStorage.getItem('carFlipGame2');if(s){GS=JSON.parse(s);GS.gameDate=new Date(GS.gameDate)}else{GS.gameDate=new Date(GS.gameDate)}}
 function saveGame(){localStorage.setItem('carFlipGame2',JSON.stringify(GS))}
@@ -1100,9 +1100,9 @@ function advanceTime(){
 function startGameTimer(){
     if(gameTimerInterval)clearInterval(gameTimerInterval);
     gameTimerInterval=setInterval(()=>{
-        GS.gameTimeSeconds+=1; // +1 игровая секунда каждую секунду реального времени
-        if(GS.gameTimeSeconds>=24*60*60){ // 24 часа = новый день
-            GS.gameTimeSeconds=0;
+        GS.gameTimeSeconds+=60; // +60 игровых секунд (1 игровая минута) каждую секунду реального времени (Time Scale = 60)
+        if(GS.gameTimeSeconds>=24*3600){ // 24 игровых часа = новый день
+            GS.gameTimeSeconds=GS.gameTimeSeconds%(24*3600);
             advanceTime();
         }
         updateGameTimeDisplay();
@@ -1111,10 +1111,9 @@ function startGameTimer(){
 
 function updateGameTimeDisplay(){
     const totalSeconds=GS.gameTimeSeconds;
-    const hours=Math.floor(totalSeconds/3600);
+    const hours=Math.floor(totalSeconds/3600)%24;
     const minutes=Math.floor((totalSeconds%3600)/60);
-    const seconds=totalSeconds%60;
-    const timeStr=`${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+    const timeStr=`${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}`;
     const e1=document.getElementById('statusTime');if(e1)e1.textContent=timeStr;
     const e2=document.getElementById('macosTime');if(e2)e2.textContent=timeStr;
 }
