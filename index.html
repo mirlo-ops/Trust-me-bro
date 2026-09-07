@@ -1100,19 +1100,21 @@ function advanceTime(){
 function startGameTimer(){
     if(gameTimerInterval)clearInterval(gameTimerInterval);
     gameTimerInterval=setInterval(()=>{
-        GS.gameTimeSeconds+=60; // 1 игровой час = 60 сек реального времени
-        if(GS.gameTimeSeconds>=24*60){ // 24 часа = новый день
+        GS.gameTimeSeconds+=1; // +1 игровая секунда каждую секунду реального времени
+        if(GS.gameTimeSeconds>=24*60*60){ // 24 часа = новый день
             GS.gameTimeSeconds=0;
             advanceTime();
         }
         updateGameTimeDisplay();
-    },60000); // Каждую минуту реального времени
+    },1000); // Каждую секунду реального времени
 }
 
 function updateGameTimeDisplay(){
-    const hours=Math.floor(GS.gameTimeSeconds/60);
-    const minutes=GS.gameTimeSeconds%60;
-    const timeStr=`${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}`;
+    const totalSeconds=GS.gameTimeSeconds;
+    const hours=Math.floor(totalSeconds/3600);
+    const minutes=Math.floor((totalSeconds%3600)/60);
+    const seconds=totalSeconds%60;
+    const timeStr=`${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
     const e1=document.getElementById('statusTime');if(e1)e1.textContent=timeStr;
     const e2=document.getElementById('macosTime');if(e2)e2.textContent=timeStr;
 }
