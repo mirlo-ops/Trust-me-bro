@@ -567,7 +567,7 @@ const appDefs=[
 ];
 
 // ===================== STATE =====================
-let GS={balance:500000,garage:[],listings:[],transactions:[],favorites:[],notes:'',gameDay:1,gameDate:new Date(2026,8,7).toISOString(),myListings:[],maxGarageSlots:3,credits:[],chats:[],news:[],activeEffects:[],interfaceMode:'auto',currentCity:'Челябинск'};
+let GS={balance:500000,garage:[],listings:[],transactions:[],favorites:[],notes:'',gameDay:1,gameDate:new Date(2026,8,7).toISOString(),myListings:[],maxGarageSlots:3,credits:[],chats:[],news:[],activeEffects:[],interfaceMode:'auto',currentCity:'Челябинск',gameTimeSeconds:0};
 
 function loadGame(){const s=localStorage.getItem('carFlipGame2');if(s){GS=JSON.parse(s);GS.gameDate=new Date(GS.gameDate)}else{GS.gameDate=new Date(GS.gameDate)}}
 function saveGame(){localStorage.setItem('carFlipGame2',JSON.stringify(GS))}
@@ -1072,6 +1072,8 @@ function renderNews(){
 }
 
 // ===================== TIME =====================
+let gameTimerInterval=null;
+
 function advanceTime(){
     GS.gameDay++;
     GS.gameDate=new Date(new Date(GS.gameDate).getTime()+86400000).toISOString();
@@ -1093,6 +1095,26 @@ function advanceTime(){
     const mn=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
     const cd=document.getElementById('calendarDate');if(cd)cd.textContent=`${dn[d.getDay()]}, ${d.getDate()} ${mn[d.getMonth()]} ${d.getFullYear()}`;
     showToast(`День ${GS.gameDay} начался! ⏩`,'success');
+}
+
+function startGameTimer(){
+    if(gameTimerInterval)clearInterval(gameTimerInterval);
+    gameTimerInterval=setInterval(()=>{
+        GS.gameTimeSeconds+=60; // 1 игровой час = 60 сек реального времени
+        if(GS.gameTimeSeconds>=24*60){ // 24 часа = новый день
+            GS.gameTimeSeconds=0;
+            advanceTime();
+        }
+        updateGameTimeDisplay();
+    },60000); // Каждую минуту реального времени
+}
+
+function updateGameTimeDisplay(){
+    const hours=Math.floor(GS.gameTimeSeconds/60);
+    const minutes=GS.gameTimeSeconds%60;
+    const timeStr=`${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}`;
+    const e1=document.getElementById('statusTime');if(e1)e1.textContent=timeStr;
+    const e2=document.getElementById('macosTime');if(e2)e2.textContent=timeStr;
 }
 function processSales(){
     const rm=[];
@@ -1174,11 +1196,13 @@ function init(){
     if(!GS.news)GS.news=[];
     if(!GS.activeEffects)GS.activeEffects=[];
     if(!GS.credits)GS.credits=[];
+    if(GS.gameTimeSeconds===undefined)GS.gameTimeSeconds=0;
     buildPhoneGrid();
     detectMode();
     if(currentMode==='desktop')buildDesktopUI();
-    renderListings();renderGarage();renderTransactions();updateBalance();updateTime();
-    setInterval(updateTime,60000);
+    renderListings();renderGarage();renderTransactions();updateBalance();
+    updateGameTimeDisplay(); // Показываем игровое время вместо реального
+    startGameTimer(); // Запускаем игровой таймер
     document.getElementById('currentCity').textContent=GS.currentCity||'Челябинск';
 }
 init();
