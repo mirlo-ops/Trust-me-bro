@@ -27,8 +27,10 @@
         .app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 10px;padding:30px 20px}
         .app-icon{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .15s}
         .app-icon:active{transform:scale(.9)}
-        .app-icon-img{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+        .app-icon-img{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .15s}
+        .app-icon-png{width:56px;height:56px;border-radius:14px;object-fit:cover;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .15s}
         .app-icon-label{color:#fff;font-size:11px;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+        .app-icon:active img,.app-icon:active .app-icon-img{transform:scale(.9)}
 
         /* ===== APP SCREENS ===== */
         .app-screen{position:absolute;top:0;left:0;width:100%;height:100%;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:100;display:flex;flex-direction:column}
@@ -277,7 +279,9 @@
         .macos-desktop-icon{width:80px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:8px;cursor:pointer;transition:background .15s}
         .macos-desktop-icon:hover{background:rgba(255,255,255,.15)}
         .macos-desktop-icon:active{background:rgba(255,255,255,.25)}
-        .macos-desktop-icon .icon-img{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+        .macos-desktop-icon .icon-img{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .15s}
+        .macos-desktop-icon-png{width:52px;height:52px;border-radius:12px;object-fit:cover;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .15s}
+        .macos-desktop-icon:active img,.macos-desktop-icon:active .icon-img{transform:scale(.9)}
         .macos-desktop-icon .icon-label{color:#fff;font-size:11px;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.8)}
 
         .macos-dock{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(40,40,40,.75);backdrop-filter:blur(20px);border-radius:18px;padding:6px 10px;display:flex;gap:4px;z-index:1001;border:1px solid rgba(255,255,255,.2)}
@@ -286,6 +290,10 @@
         .dock-item:active{transform:scale(1.2) translateY(-6px)}
         .dock-item .dock-dot{position:absolute;bottom:-4px;width:4px;height:4px;background:#fff;border-radius:50%;display:none}
         .dock-item.running .dock-dot{display:block}
+        .dock-item img{box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .15s}
+        .dock-item:active img{transform:scale(.9)}
+        .dock-icon-bg{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .15s}
+        .dock-icon-png{width:44px;height:44px;border-radius:11px;object-fit:cover;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .15s}
         .dock-separator{width:1px;background:rgba(255,255,255,.3);margin:6px 4px}
 
         /* macOS Window */
@@ -613,11 +621,11 @@ window.addEventListener('resize',()=>{if(GS.interfaceMode==='auto')detectMode()}
 function buildDesktopUI(){
     // Desktop icons
     const di=document.getElementById('macosDesktopIcons');
-    di.innerHTML=appDefs.map(a=>`<div class="macos-desktop-icon" onclick="openDesktopApp('${a.id}')">${a.iconImg ? `<div class="icon-img" style="background:transparent;padding:0"><img src="${a.iconImg}" style="width:100%;height:100%;border-radius:14px;object-fit:cover"></div>` : `<div class="icon-img" style="background:${a.bg}">${a.icon}</div>`}<div class="icon-label">${a.label}</div></div>`).join('');
+    di.innerHTML=appDefs.map(a=>`<div class="macos-desktop-icon" onclick="openDesktopApp('${a.id}')">${a.iconImg ? `<img src="${a.iconImg}" class="macos-desktop-icon-png">` : `<div class="icon-img" style="background:${a.bg}">${a.icon}</div>`}<div class="icon-label">${a.label}</div></div>`).join('');
     // Dock
     const dk=document.getElementById('macosDock');
     const dockApps=['avtobuy','garage','bank','maps','news','settings'];
-    dk.innerHTML=dockApps.map(id=>{const a=appDefs.find(x=>x.id===id);return`<div class="dock-item" id="dock-${id}" onclick="openDesktopApp('${id}')">${a.iconImg ? `<div style="width:44px;height:44px;border-radius:11px;background:transparent;display:flex;align-items:center;justify-content:center;font-size:22px"><img src="${a.iconImg}" style="width:100%;height:100%;border-radius:11px;object-fit:cover"></div>` : `<div style="width:44px;height:44px;border-radius:11px;background:${a.bg};display:flex;align-items:center;justify-content:center;font-size:22px">${a.icon}</div>`}<div class="dock-dot"></div></div>`}).join('')+'<div class="dock-separator"></div><div class="dock-item" onclick="openDesktopApp(\'notepad\')"><div style="width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#fbbf24,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:22px">💡</div><div class="dock-dot"></div></div>';
+    dk.innerHTML=dockApps.map(id=>{const a=appDefs.find(x=>x.id===id);return`<div class="dock-item" id="dock-${id}" onclick="openDesktopApp('${id}')">${a.iconImg ? `<img src="${a.iconImg}" class="dock-icon-png">` : `<div class="dock-icon-bg" style="background:${a.bg}">${a.icon}</div>`}<div class="dock-dot"></div></div>`}).join('')+'<div class="dock-separator"></div><div class="dock-item" onclick="openDesktopApp(\'notepad\')"><div class="dock-icon-bg" style="background:linear-gradient(135deg,#fbbf24,#f59e0b)">💡</div><div class="dock-dot"></div></div>';
     // Windows container
     document.getElementById('macosWindows').innerHTML='';
 }
@@ -687,7 +695,7 @@ function renderDesktopAppContent(id){
 }
 // ===================== PHONE APP GRID =====================
 function buildPhoneGrid(){
-    document.getElementById('phoneAppGrid').innerHTML=appDefs.map(a=>`<div class="app-icon" onclick="openApp('${a.id}')">${a.iconImg ? `<div class="app-icon-img" style="background:transparent;padding:0"><img src="${a.iconImg}" style="width:100%;height:100%;border-radius:14px;object-fit:cover"></div>` : `<div class="app-icon-img" style="background:${a.bg}">${a.icon}</div>`}<span class="app-icon-label">${a.label}</span></div>`).join('');
+    document.getElementById('phoneAppGrid').innerHTML=appDefs.map(a=>`<div class="app-icon" onclick="openApp('${a.id}')">${a.iconImg ? `<img src="${a.iconImg}" class="app-icon-png">` : `<div class="app-icon-img" style="background:${a.bg}">${a.icon}</div>`}<span class="app-icon-label">${a.label}</span></div>`).join('');
 }
 
 // ===================== APP NAVIGATION =====================
