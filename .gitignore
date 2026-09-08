@@ -1,10 +1,66 @@
-(css/apps.css, css/base.css, css/components.css, css/desktop.css, css/phone.css)
+```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
 
-# Added files:
-['css/apps.css', 'css/base.css', 'css/components.css', 'css/desktop.css', 'css/phone.css']
+# Dependencies
+node_modules/
+venv/
+.venv/
+.env
+.env.local
+.env.*
 
-# Deleted files:
-['style.css']
+# Build directories
+dist/
+build/
+target/
+*.log
+*.tmp
+*.swp
 
-# Modified files:
-['index.html']
+# Editors
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+```
