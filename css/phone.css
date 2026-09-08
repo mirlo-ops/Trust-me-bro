@@ -1,0 +1,33 @@
+/* ===== PHONE FRAME ===== */
+.phone-frame{width:390px;height:844px;background:#000;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 0 60px rgba(0,0,0,.5),inset 0 0 2px rgba(255,255,255,.1);border:3px solid #333}
+.phone-screen{width:100%;height:100%;position:relative;overflow:hidden}
+.status-bar{position:absolute;top:0;left:0;right:0;height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;z-index:1000;color:#fff;font-size:14px;font-weight:600}
+.status-bar.dark{color:#000}
+.status-left{display:flex;align-items:center;gap:4px}
+.status-right{display:flex;align-items:center;gap:6px;font-size:12px}
+.battery{width:24px;height:12px;border:1.5px solid currentColor;border-radius:3px;position:relative;display:flex;align-items:center;padding:1.5px}
+.battery::after{content:'';position:absolute;right:-4px;width:2px;height:5px;background:currentColor;border-radius:0 1px 1px 0}
+.battery-level{height:100%;width:66%;background:currentColor;border-radius:1px;transition:width .3s,background-color .3s}
+.battery-charging::before{content:'⚡';position:absolute;left:-14px;font-size:10px;color:#fbbf24}
+.signal-bars{display:flex;align-items:flex-end;gap:1px;height:12px}
+.signal-bar{width:3px;background:currentColor;border-radius:1px}
+
+/* ===== HOME SCREEN ===== */
+.home-screen{width:100%;height:100%;background:linear-gradient(135deg,#1a1a3e 0%,#0d1b3e 50%,#162447 100%);padding-top:50px;position:relative}
+.app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 10px;padding:30px 20px}
+.app-icon{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .15s}
+.app-icon:active{transform:scale(.9)}
+.app-icon-img{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .15s}
+.app-icon-wrapper{width:56px;height:56px;border-radius:14px;overflow:hidden;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .15s;background:transparent}
+.app-icon-png{width:130%;height:130%;object-fit:cover;position:absolute;top:-15%;left:-15%}
+.app-icon-label{color:#fff;font-size:11px;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.app-icon:active .app-icon-wrapper,.app-icon:active .app-icon-img{transform:scale(.9)}
+
+/* ===== APP SCREENS ===== */
+.app-screen{position:absolute;top:0;left:0;width:100%;height:100%;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:100;display:flex;flex-direction:column}
+.app-screen.active{transform:translateX(0)}
+.app-header{height:88px;padding-top:44px;display:flex;align-items:center;padding-left:16px;padding-right:16px;gap:12px;flex-shrink:0}
+.app-header .back-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;border-radius:50%;transition:background .2s}
+.app-header .back-btn:active{background:rgba(255,255,255,.1)}
+.app-header .app-title{font-size:18px;font-weight:700;flex:1}
+.app-header .header-action{font-size:20px;cursor:pointer;opacity:.7}
