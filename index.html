@@ -120,6 +120,12 @@
         .garage-slots-info{padding:12px 16px;background:#fff;margin:12px 16px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
         .garage-slots-info span{font-size:13px;color:#666}
         .garage-slots-info strong{color:#4a9eff}
+        .garage-city-selector{padding:8px 16px;background:#fff;display:flex;gap:8px;overflow-x:auto;border-bottom:1px solid #e5e5e5}
+        .garage-city-btn{padding:6px 14px;border-radius:16px;font-size:12px;font-weight:600;background:#f0f0f0;color:#666;border:none;cursor:pointer;transition:all .2s;white-space:nowrap}
+        .garage-city-btn.active{background:#4a9eff;color:#fff}
+        .garage-parking-group{margin-bottom:16px}
+        .garage-parking-title{font-size:14px;font-weight:700;color:#333;margin-bottom:8px;padding:0 4px}
+        .garage-slot-number{font-size:11px;color:#4a9eff;font-weight:600;margin-top:4px}
 
         /* ===== BANK ===== */
         #bank-app{background:#f8f8f8;color:#000}
@@ -385,13 +391,13 @@
             <div class="app-header">
                 <div class="back-btn" onclick="closeApp('garage')">←</div>
                 <div class="app-title">Ваш автопарк</div>
-                <div class="header-action">📅</div>
             </div>
             <div class="garage-tabs">
-                <div class="garage-tab active">Мои авто</div>
-                <div class="garage-tab">Парковочные места</div>
+                <div class="garage-tab active" onclick="switchGarageTab('myCars')">Мои авто</div>
+                <div class="garage-tab" onclick="switchGarageTab('parkingSlots')">Парковочные места</div>
             </div>
             <div class="garage-slots-info" id="garageSlotsInfo"></div>
+            <div class="garage-city-selector" id="garageCitySelector"></div>
             <div class="garage-list" id="garageList"></div>
         </div>
 
@@ -886,7 +892,8 @@ function sendHaggleReply(level){
                 const car=GS.listings[carIdx];
                 if(GS.balance>=offer){
                     GS.balance-=offer;
-                    GS.garage.push({...car,price:offer,isOwn:true,purchasePrice:offer,purchaseDate:GS.gameDay});
+                    if(!GS.currentGarageCity)GS.currentGarageCity='Москва';
+                    GS.garage.push({...car,price:offer,isOwn:true,purchasePrice:offer,purchaseDate:GS.gameDay,garageCity:GS.currentGarageCity});
                     GS.transactions.unshift({id:Date.now(),type:'expense',name:`Покупка: ${car.brand} ${car.model} (торг)`,amount:offer,date:new Date().toISOString(),icon:'🚗'});
                     GS.listings.splice(carIdx,1);
                     ch.messages.push({from:'system',text:`Вы купили ${car.brand} ${car.model} за ${fmtP(offer)}!`});
@@ -919,9 +926,11 @@ function buyCar(id){
     if(GS.garage.length>=GS.maxGarageSlots){showToast('Гараж полон! Купите больше мест.','error');return}
     if(GS.balance<car.price){showToast('Недостаточно средств!','error');return}
     GS.balance-=car.price;
-    GS.garage.push({...car,isOwn:true,purchasePrice:car.price,purchaseDate:GS.gameDay});
+    // Инициализация currentGarageCity если нет
+    if(!GS.currentGarageCity)GS.currentGarageCity='Москва';
+    GS.garage.push({...car,isOwn:true,purchasePrice:car.price,purchaseDate:GS.gameDay,garageCity:GS.currentGarageCity});
     GS.transactions.unshift({id:Date.now(),type:'expense',name:`Покупка: ${car.brand} ${car.model}`,amount:car.price,date:new Date().toISOString(),icon:'🚗'});
-    GS.listings.splice(ci,1);saveGame();closeModal();renderListings();updateBalance();renderTransactions();
+    GS.listings.splice(ci,1);saveGame();closeModal();renderListings();updateBalance();renderTransactions();renderGarage();
     showToast(`${car.brand} ${car.model} куплен! 🎉`,'success');
 }
 
@@ -985,9 +994,88 @@ function repairCar(carId,level){
 function renderGarage(){
     const c=document.getElementById('garageList');if(!c)return;
     const si=document.getElementById('garageSlotsInfo');
-    if(si)si.innerHTML=`<span>Мест: <strong>${GS.garage.length}/${GS.maxGarageSlots}</strong></span><button class="btn btn-primary" style="flex:0;padding:8px 16px;font-size:12px" onclick="buyGarageSlot()">+ Купить место (${fmtP(getSlotPrice())})</button>`;
-    if(!GS.garage.length){c.innerHTML='<div class="garage-empty"><div class="garage-empty-icon">🚗</div><div>Гараж пуст</div><div style="font-size:13px;margin-top:8px;color:#aaa">Купите машину на AvtoBuy</div></div>';return}
-    c.innerHTML=GS.garage.map(car=>{const cc=car.condition==='В идеале'?'condition-ideal':car.condition==='Хорошее'?'condition-good':'condition-repair';return`<div class="garage-card" onclick="showCarDetail('${car.id}',true)"><div class="garage-car-photo"><img src="${car.photo}" alt="" loading="lazy"></div><div class="garage-car-info"><div class="garage-car-name">${car.brand} ${car.model}</div><div class="garage-car-details">${car.year} г. • ${car.mileage} тыс км</div><div class="garage-car-condition ${cc}">${car.condition}</div><div class="garage-car-location">📍 ${car.city} • 🅿 В гараже</div></div></div>`}).join('');
+    const cs=document.getElementById('garageCitySelector');
+    
+    // Инициализация currentGarageCity если нет
+    if(!GS.currentGarageCity)GS.currentGarageCity='Москва';
+    if(!GS.activeGarageTab)GS.activeGarageTab='myCars';
+    
+    // Обновление информации о местах (без кнопки покупки)
+    if(si)si.innerHTML=`<span>Мест: <strong>${GS.garage.length}/${GS.maxGarageSlots}</strong></span>`;
+    
+    // Рендер селектора городов
+    if(cs){
+        const citiesWithCars=[...new Set(GS.garage.map(c=>c.garageCity||'Москва'))];
+        if(!citiesWithCars.includes('Москва'))citiesWithCars.unshift('Москва');
+        cs.innerHTML=citiesWithCars.map(city=>`<button class="garage-city-btn ${city===GS.currentGarageCity?'active':''}" onclick="changeGarageCity('${city}')">${city}</button>`).join('');
+    }
+    
+    // Рендер в зависимости от активной вкладки
+    if(GS.activeGarageTab==='myCars'){
+        renderMyCarsTab(c);
+    }else{
+        renderParkingSlotsTab(c);
+    }
+}
+
+function switchGarageTab(tab){
+    GS.activeGarageTab=tab;
+    document.querySelectorAll('.garage-tab').forEach(t=>t.classList.remove('active'));
+    event.target.classList.add('active');
+    renderGarage();
+}
+
+function changeGarageCity(city){
+    GS.currentGarageCity=city;
+    renderGarage();
+}
+
+function getGarageSlotNumber(car){
+    const idx=GS.garage.findIndex(c=>c.id===car.id);
+    return `Место #${idx+1}`;
+}
+
+function renderMyCarsTab(container){
+    const carsInCity=GS.garage.filter(c=>(c.garageCity||'Москва')===GS.currentGarageCity);
+    
+    if(!carsInCity.length){
+        container.innerHTML='<div class="garage-empty"><div class="garage-empty-icon">🚗</div><div>Гараж пуст</div><div style="font-size:13px;margin-top:8px;color:#aaa">В этом городе нет машин. Купите машину на AvtoBuy или выберите другой город.</div></div>';
+        return;
+    }
+    
+    container.innerHTML=carsInCity.map((car,idx)=>{
+        const cc=car.condition==='В идеале'?'condition-ideal':car.condition==='Хорошее'?'condition-good':'condition-repair';
+        const slotNum=getGarageSlotNumber(car);
+        return`<div class="garage-card" onclick="showCarDetail('${car.id}',true)"><div class="garage-car-photo"><img src="${car.photo}" alt="" loading="lazy"></div><div class="garage-car-info"><div class="garage-car-name">${car.brand} ${car.model}</div><div class="garage-car-details">${car.year} г. • ${car.mileage} тыс км</div><div class="garage-car-condition ${cc}">${car.condition}</div><div class="garage-slot-number">${slotNum}</div></div></div>`;
+    }).join('');
+}
+
+function renderParkingSlotsTab(container){
+    if(!GS.garage.length){
+        container.innerHTML='<div class="garage-empty"><div class="garage-empty-icon">🚗</div><div>У вас нет автомобилей</div><div style="font-size:13px;margin-top:8px;color:#aaa">Купите машину на AvtoBuy</div></div>';
+        return;
+    }
+    
+    // Группировка по городам
+    const grouped={};
+    GS.garage.forEach(car=>{
+        const city=car.garageCity||'Москва';
+        if(!grouped[city])grouped[city]=[];
+        grouped[city].push(car);
+    });
+    
+    let html='';
+    for(const city in grouped){
+        const cars=grouped[city];
+        html+=`<div class="garage-parking-group"><div class="garage-parking-title">📍 ${city} (${cars.length} ${cars.length===1?'машина':'машины'})</div>`;
+        cars.forEach(car=>{
+            const cc=car.condition==='В идеале'?'condition-ideal':car.condition==='Хорошее'?'condition-good':'condition-repair';
+            const slotNum=getGarageSlotNumber(car);
+            html+=`<div class="garage-card" onclick="showCarDetail('${car.id}',true)"><div class="garage-car-photo"><img src="${car.photo}" alt="" loading="lazy"></div><div class="garage-car-info"><div class="garage-car-name">${car.brand} ${car.model}</div><div class="garage-car-details">${car.year} г. • ${car.mileage} тыс км</div><div class="garage-car-condition ${cc}">${car.condition}</div><div class="garage-slot-number">${slotNum}</div></div></div>`;
+        });
+        html+='</div>';
+    }
+    container.innerHTML=html;
 }
 function getSlotPrice(){return 50000*GS.maxGarageSlots}
 function buyGarageSlot(){
@@ -1028,7 +1116,7 @@ function driveCar(city,cost){
         GS.transactions.unshift({id:Date.now(),type:'expense',name:`Перегон: ${car.brand} ${car.model} → ${city}`,amount:cost,date:new Date().toISOString(),icon:'🚗'});
         showToast(`${car.brand} ${car.model} доставлен в ${city}! ✅`,'success');
     }
-    car.city=city;GS.currentCity=city;
+    car.city=city;car.garageCity=city;GS.currentCity=city;
     document.getElementById('currentCity').textContent=city;
     saveGame();closeModal();renderGarage();renderMaps();updateBalance();renderTransactions();
 }
@@ -1293,6 +1381,8 @@ function init(){
     if(!GS.activeEffects)GS.activeEffects=[];
     if(!GS.credits)GS.credits=[];
     if(GS.gameTimeSeconds===undefined)GS.gameTimeSeconds=0;
+    if(!GS.currentGarageCity)GS.currentGarageCity='Москва';
+    if(!GS.activeGarageTab)GS.activeGarageTab='myCars';
     buildPhoneGrid();
     detectMode();
     if(currentMode==='desktop')buildDesktopUI();
