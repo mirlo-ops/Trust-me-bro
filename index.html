@@ -387,7 +387,7 @@
         <div class="app-screen" id="bank-app">
             <div class="app-header">
                 <div class="back-btn" onclick="closeApp('bank')">←</div>
-                <div class="app-title">П-Банк</div>
+                <div class="app-title">ФинкБанк</div>
                 <div class="header-action">⋯</div>
             </div>
             <div class="balance-card">
@@ -406,7 +406,7 @@
         <div class="app-screen" id="maps-app">
             <div class="app-header">
                 <div class="back-btn" onclick="closeApp('maps')">←</div>
-                <div class="app-title">Карты</div>
+                <div class="app-title">Карта</div>
             </div>
             <div style="padding:12px 16px;font-size:13px;color:#888;background:#0a0a0a">Выберите город для перегона авто:</div>
             <div class="maps-city-list" id="mapsCityList"></div>
@@ -454,7 +454,7 @@
 
         <!-- NOTEPAD -->
         <div class="app-screen" id="notepad-app">
-            <div class="app-header"><div class="back-btn" onclick="closeApp('notepad')">←</div><div class="app-title">Блокнот</div></div>
+            <div class="app-header"><div class="back-btn" onclick="closeApp('notepad')">←</div><div class="app-title">Заметки</div></div>
             <div class="notepad-content"><textarea class="notepad-textarea" id="notepadText" placeholder="Ваши заметки..."></textarea></div>
         </div>
 
@@ -470,7 +470,7 @@
         </div>
         <!-- REALTOR -->
         <div class="app-screen" id="realtor-app" style="background:#1a1a2e;color:#fff">
-            <div class="app-header" style="background:#0891b2;color:#fff"><div class="back-btn" onclick="closeApp('realtor')">←</div><div class="app-title">Риэлтор</div></div>
+            <div class="app-header" style="background:#0891b2;color:#fff"><div class="back-btn" onclick="closeApp('realtor')">←</div><div class="app-title">Риелтор</div></div>
             <div class="decorative-screen"><div class="decorative-icon">📞</div><div class="decorative-text">Недвижимость скоро</div></div>
         </div>
         <!-- VPN -->
@@ -554,16 +554,16 @@ const newsEvents=[
 
 const appDefs=[
 {id:'avtobuy',icon:'🚗',iconImg:'CarGO-icon-192x192.png',label:'CarGO',bg:'linear-gradient(135deg,#1a1a2e,#2d2d5e)'},
-{id:'maps',icon:'📍',label:'Карты',bg:'linear-gradient(135deg,#22c55e,#16a34a)'},
-{id:'garage',icon:'🏠',label:'Гараж',bg:'linear-gradient(135deg,#4a9eff,#2563eb)'},
-{id:'bank',icon:'🟠',label:'П-Банк',bg:'linear-gradient(135deg,#ff8c00,#ea580c)'},
-{id:'news',icon:'📰',label:'Новости',bg:'linear-gradient(135deg,#dc2626,#b91c1c)'},
-{id:'sleep',icon:'😴',label:'Сон',bg:'linear-gradient(135deg,#6366f1,#4338ca)'},
-{id:'calendar',icon:'📅',label:'Календарь',bg:'white'},
-{id:'realtor',icon:'📞',label:'Риэлтор',bg:'linear-gradient(135deg,#06b6d4,#0891b2)'},
-{id:'settings',icon:'⚙️',label:'Настройки',bg:'linear-gradient(135deg,#6b7280,#374151)'},
-{id:'vpn',icon:'🌐',label:'VPN',bg:'linear-gradient(135deg,#10b981,#059669)'},
-{id:'notepad',icon:'💡',label:'Блокнот',bg:'linear-gradient(135deg,#fbbf24,#f59e0b)'},
+{id:'maps',icon:'📍',iconImg:'maps-icon.png',label:'Карта',bg:'linear-gradient(135deg,#22c55e,#16a34a)'},
+{id:'garage',icon:'🏠',iconImg:'garage-icon.png',label:'Гараж',bg:'linear-gradient(135deg,#4a9eff,#2563eb)'},
+{id:'bank',icon:'🟠',iconImg:'bank-icon.png',label:'ФинкБанк',bg:'linear-gradient(135deg,#ff8c00,#ea580c)'},
+{id:'news',icon:'📰',iconImg:'news-icon.png',label:'Новости',bg:'linear-gradient(135deg,#dc2626,#b91c1c)'},
+{id:'sleep',icon:'😴',iconImg:'sleep-icon.png',label:'Сон',bg:'linear-gradient(135deg,#6366f1,#4338ca)'},
+{id:'calendar',icon:'',iconImg:'calendare-icon.png',label:'Календарь',bg:'white'},
+{id:'realtor',icon:'',iconImg:'sobolev-house-icon.png',label:'Риелтор',bg:'linear-gradient(135deg,#06b6d4,#0891b2)'},
+{id:'settings',icon:'⚙️',iconImg:'setting-icon.png',label:'Настройки',bg:'linear-gradient(135deg,#6b7280,#374151)'},
+{id:'vpn',icon:'🌐',iconImg:'vpn-icon.png',label:'VPN',bg:'linear-gradient(135deg,#10b981,#059669)'},
+{id:'notepad',icon:'💡',iconImg:'tips-icon.png',label:'Заметки',bg:'linear-gradient(135deg,#fbbf24,#f59e0b)'},
 {id:'blocks',icon:'🧱',label:'PlameBlocks',bg:'linear-gradient(135deg,#a855f7,#7c3aed)'}
 ];
 
@@ -617,7 +617,7 @@ function buildDesktopUI(){
     // Dock
     const dk=document.getElementById('macosDock');
     const dockApps=['avtobuy','garage','bank','maps','news','settings'];
-    dk.innerHTML=dockApps.map(id=>{const a=appDefs.find(x=>x.id===id);return`<div class="dock-item" id="dock-${id}" onclick="openDesktopApp('${id}')"><div style="width:44px;height:44px;border-radius:11px;background:${a.bg};display:flex;align-items:center;justify-content:center;font-size:22px">${a.iconImg ? `<img src="${a.iconImg}" style="width:100%;height:100%;border-radius:11px;object-fit:cover">` : a.icon}</div><div class="dock-dot"></div></div>`}).join('')+'<div class="dock-separator"></div><div class="dock-item" onclick="openDesktopApp(\'notepad\')"><div style="width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#fbbf24,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:22px">💡</div><div class="dock-dot"></div></div>';
+    dk.innerHTML=dockApps.map(id=>{const a=appDefs.find(x=>x.id===id);return`<div class="dock-item" id="dock-${id}" onclick="openDesktopApp('${id}')"><div style="width:44px;height:44px;border-radius:11px;background:${a.bg};display:flex;align-items:center;justify-content:center;font-size:22px">${a.iconImg ? `<img src="${a.iconImg}" style="width:100%;height:100%;border-radius:11px;object-fit:cover">` : a.icon}</div><div class="dock-dot"></div></div>`}).join('')+'<div class="dock-separator"></div><div class="dock-item" onclick="openDesktopApp(\'notepad\')"><div style="width:44px;height:44px;border-radius:11px;background:${appDefs.find(x=>x.id==='notepad').bg};display:flex;align-items:center;justify-content:center;font-size:22px">${appDefs.find(x=>x.id==='notepad').iconImg ? `<img src="${appDefs.find(x=>x.id==='notepad').iconImg}" style="width:100%;height:100%;border-radius:11px;object-fit:cover">` : appDefs.find(x=>x.id==='notepad').icon}</div><div class="dock-dot"></div></div>';
     // Windows container
     document.getElementById('macosWindows').innerHTML='';
 }
